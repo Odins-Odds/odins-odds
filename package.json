@@ -1,0 +1,15 @@
+{
+  "name": "odins-odds",
+  "version": "1.0.0",
+  "description": "gameing betting platfrom",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "thedepthhoar@gmail.com",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^2.0.2",
+    "hardhat": "^2.13.0"
+  }
+}
