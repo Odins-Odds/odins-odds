@@ -29,15 +29,37 @@ contract OdinsOdds {
 
     event BetPlaced(address indexed user, uint outcome, uint amount);
 
+
+    // TODO Link wagers and bets together have an array of bets connected to it's associated wager
+    struct Wager {
+        uint time;
+        uint expirey;
+        uint betChoices;
+        address payable wagerCreator;
+        Bets 
+    }
+
+    Wager[] public Wagers;
+
     struct Bet {
         address payable bettor;
-        // Outcome outcome;
+        uint outcome;
         uint256 amount;
         uint256 period;
     }
 
     constructor() {
         OdinsOwner = msg.sender;
+    }
+
+    function createWager(
+        uint _time,
+        uint _expiry,
+        uint _betChoices
+    ) public returns (Wager memory) {
+        Wager memory newWager = Wager(_time, _expiry, _betChoices, msg.sender);
+        wager.push(Wager);
+        return newWager;
     }
 
     function placeBet(uint outcome) public payable {
@@ -50,18 +72,14 @@ contract OdinsOdds {
 
         emit BetPlaced(msg.sender, outcome, msg.value);
 
+        // // or make bet with struct
 
-
-        // or make bet with struct
-
-        bet[betCount] = _Bet(
-            // inputs....
-        // address payable bettor;
-        // // Outcome outcome;
-        // uint256 amount;
-        // uint256 period;
-        // )
-
-
+        // bet[betCount] = _Bet(
+        //     // inputs....
+        // // address payable bettor;
+        // // // Outcome outcome;
+        // // uint256 amount;
+        // // uint256 period;
+        // // )
     }
 }
