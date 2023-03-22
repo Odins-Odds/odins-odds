@@ -24,6 +24,8 @@ TODO
 contract OdinsOdds {
     address OdinsOwner;
 
+    // aavegochi DAO address 0xb208f8BB431f580CC4b216826AFfB128cd1431aB
+
     uint public constant NUM_PERIODS = 4;
     uint256[4] public REWARD_PERCENTAGES = [40, 30, 20, 10];
 
