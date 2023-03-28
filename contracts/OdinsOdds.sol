@@ -21,16 +21,36 @@ TODO
     math for time period distrabution
 */
 
+interface IDAO {
+    function isConfirmed(uint transactionId) external view returns (bool);
+
+    function getOwners() external view returns (address[] memory);
+}
+
 contract OdinsOdds {
     address OdinsOwner;
 
-    // aavegochi DAO address 0xb208f8BB431f580CC4b216826AFfB128cd1431aB
+    IDAO public daoContract;
+
+    // aavegochi DAO polygon address 0xb208f8BB431f580CC4b216826AFfB128cd1431aB
+    constructor(address _daoContractAddress) {
+        daoContract = IDAO(_daoContractAddress);
+    }
+
+    function checkVoteStatus(
+        uint transactionId
+    ) public view returns (string memory) {
+        if (daoContract.isConfirmed(transactionId)) {
+            return "Transaction has enough confirmations and can be executed.";
+        } else {
+            return "Transaction has not yet received enough confirmations.";
+        }
+    }
 
     uint public constant NUM_PERIODS = 4;
     uint256[4] public REWARD_PERCENTAGES = [40, 30, 20, 10];
 
     event BetPlaced(address indexed user, uint outcome, uint amount);
-
 
     // TODO Link wagers and bets together have an array of bets connected to it's associated wager
     struct Wager {
@@ -38,7 +58,7 @@ contract OdinsOdds {
         uint expirey;
         uint betChoices;
         address payable wagerCreator;
-        Bets 
+        //Bets
     }
 
     Wager[] public Wagers;
