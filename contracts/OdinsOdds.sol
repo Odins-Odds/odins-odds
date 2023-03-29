@@ -20,32 +20,34 @@ TODO
     choose winning group option
     math for time period distrabution
 */
+//contracts/mocks/IDAOmock.sol
+import "./mocks/IDAOmock.sol";
 
-interface IDAO {
-    function isConfirmed(uint transactionId) external view returns (bool);
+// interface IDAOmock {
+//     function isConfirmed(uint transactionId) external view returns (bool);
 
-    function getOwners() external view returns (address[] memory);
-}
+//     function getOwners() external view returns (address[] memory);
+// }
 
-contract OdinsOdds {
+contract OdinsOdds is IDAOmock {
     address OdinsOwner;
 
-    IDAO public daoContract;
+    // IDAO public daoContract;
 
     // aavegochi DAO polygon address 0xb208f8BB431f580CC4b216826AFfB128cd1431aB
-    constructor(address _daoContractAddress) {
-        daoContract = IDAO(_daoContractAddress);
-    }
+    // constructor(address _daoContractAddress) {
+    //     daoContract = IDAO(_daoContractAddress);
+    // }
 
-    function checkVoteStatus(
-        uint transactionId
-    ) public view returns (string memory) {
-        if (daoContract.isConfirmed(transactionId)) {
-            return "Transaction has enough confirmations and can be executed.";
-        } else {
-            return "Transaction has not yet received enough confirmations.";
-        }
-    }
+    // function checkVoteStatus(
+    //     uint transactionId
+    // ) public view returns (string memory) {
+    //     if (daoContract.isConfirmed(transactionId)) {
+    //         return "Transaction has enough confirmations and can be executed.";
+    //     } else {
+    //         return "Transaction has not yet received enough confirmations.";
+    //     }
+    // }
 
     uint public constant NUM_PERIODS = 4;
     uint256[4] public REWARD_PERCENTAGES = [40, 30, 20, 10];
@@ -70,38 +72,38 @@ contract OdinsOdds {
         uint256 period;
     }
 
-    constructor() {
-        OdinsOwner = msg.sender;
-    }
+    // constructor() {
+    //     OdinsOwner = msg.sender;
+    // }
 
-    function createWager(
-        uint _time,
-        uint _expiry,
-        uint _betChoices
-    ) public returns (Wager memory) {
-        Wager memory newWager = Wager(_time, _expiry, _betChoices, msg.sender);
-        wager.push(Wager);
-        return newWager;
-    }
+    // function createWager(
+    //     uint _time,
+    //     uint _expiry,
+    //     uint _betChoices
+    // ) public returns (Wager memory) {
+    //     Wager memory newWager = Wager(_time, _expiry, _betChoices, msg.sender);
+    //     wager.push(Wager);
+    //     return newWager;
+    // }
 
-    function placeBet(uint outcome) public payable {
-        require(outcome < NUM_OUTCOMES, "Invalid outcome");
-        require(msg.value > 0, "Invalid amount");
+    // function placeBet(uint outcome) public payable {
+    //     require(outcome < NUM_OUTCOMES, "Invalid outcome");
+    //     require(msg.value > 0, "Invalid amount");
 
-        bets[msg.sender][outcome] += msg.value;
-        totalBetsByOutcome[outcome] += msg.value;
-        totalPool += msg.value;
+    //     bets[msg.sender][outcome] += msg.value;
+    //     totalBetsByOutcome[outcome] += msg.value;
+    //     totalPool += msg.value;
 
-        emit BetPlaced(msg.sender, outcome, msg.value);
+    //     emit BetPlaced(msg.sender, outcome, msg.value);
 
-        // // or make bet with struct
+    // // or make bet with struct
 
-        // bet[betCount] = _Bet(
-        //     // inputs....
-        // // address payable bettor;
-        // // // Outcome outcome;
-        // // uint256 amount;
-        // // uint256 period;
-        // // )
-    }
+    // bet[betCount] = _Bet(
+    //     // inputs....
+    // // address payable bettor;
+    // // // Outcome outcome;
+    // // uint256 amount;
+    // // uint256 period;
+    // // )
+    // }
 }
