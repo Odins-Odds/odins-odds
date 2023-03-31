@@ -5,13 +5,12 @@ const { ethers } = require('hardhat');
 describe('OdinsOdds', function () {
 
   it('IDAO is confirmed should return true', async function () {
-		[factoryOwner, escrowOwner] = await ethers.getSigners();
-    const Factory = await ethers.getContractFactory('');
-    factory = await Factory.connect(factoryOwner).deploy();
-    await factory.deployed();
-    await factory.connect(escrowOwner).createContract();
-    const allEscrowContracts = await factory.getAllContracts();
-    expect(allEscrowContracts.length).to.equal(1);
+		const [odinOwner] = await ethers.getSigners();
+    const OdinsOdds = await ethers.getContractFactory('OdinsOdds');
+    const odinsOdds = await OdinsOdds.connect(odinOwner).deploy();
+    await odinsOdds.deployed();
+    const isConfirmedResult = await odinsOdds.connect(odinOwner).isConfirmed();
+    expect(isConfirmedResult).to.equal(true);
 	});
 
 });

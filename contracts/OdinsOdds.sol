@@ -39,6 +39,8 @@ contract OdinsOdds is IDAOmock {
     //     daoContract = IDAO(_daoContractAddress);
     // }
 
+    // function isConfirmed() public pure returns (bool) {}
+
     // function checkVoteStatus(
     //     uint transactionId
     // ) public view returns (string memory) {
