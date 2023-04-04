@@ -23,33 +23,8 @@ TODO
 //contracts/mocks/IDAOmock.sol
 import "./mocks/IDAOmock.sol";
 
-// interface IDAOmock {
-//     function isConfirmed(uint transactionId) external view returns (bool);
-
-//     function getOwners() external view returns (address[] memory);
-// }
-
 contract OdinsOdds is IDAOmock {
     address OdinsOwner;
-
-    // IDAO public daoContract;
-
-    // aavegochi DAO polygon address 0xb208f8BB431f580CC4b216826AFfB128cd1431aB
-    // constructor(address _daoContractAddress) {
-    //     daoContract = IDAO(_daoContractAddress);
-    // }
-
-    // function isConfirmed() public pure returns (bool) {}
-
-    // function checkVoteStatus(
-    //     uint transactionId
-    // ) public view returns (string memory) {
-    //     if (daoContract.isConfirmed(transactionId)) {
-    //         return "Transaction has enough confirmations and can be executed.";
-    //     } else {
-    //         return "Transaction has not yet received enough confirmations.";
-    //     }
-    // }
 
     uint public constant NUM_PERIODS = 4;
     uint256[4] public REWARD_PERCENTAGES = [40, 30, 20, 10];

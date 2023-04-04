@@ -9,7 +9,7 @@ describe('OdinsOdds', function () {
     const OdinsOdds = await ethers.getContractFactory('OdinsOdds');
     const odinsOdds = await OdinsOdds.connect(odinOwner).deploy();
     await odinsOdds.deployed();
-    const isConfirmedResult = await odinsOdds.connect(odinOwner).isConfirmed();
+    const isConfirmedResult = await odinsOdds.connect(odinOwner).isConfirmed(true);
     expect(isConfirmedResult).to.equal(true);
 	});
 

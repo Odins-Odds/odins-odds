@@ -2,8 +2,8 @@
 pragma solidity ^0.8.9;
 
 contract IDAOmock {
-    function isConfirmed() public pure returns (bool) {
-        return true;
+    function isConfirmed(bool vote) public pure returns (bool) {
+        return vote;
     }
 
     /// @dev Returns the confirmation status of a transaction.
