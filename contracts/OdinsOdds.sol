@@ -28,19 +28,24 @@ contract OdinsOdds is IDAOmock {
 
     uint public constant NUM_PERIODS = 4;
     uint256[4] public REWARD_PERCENTAGES = [40, 30, 20, 10];
+    uint256 public nextWagerId;
 
-    event BetPlaced(address indexed user, uint outcome, uint amount);
+    mapping(uint256 => Wager) public wagersMap;
+
+    constructor() {
+        OdinsOwner = msg.sender;
+    }
+
+    // event BetPlaced(address indexed user, uint outcome, uint amount);
 
     // TODO Link wagers and bets together have an array of bets connected to it's associated wager
     struct Wager {
+        uint ID;
         uint time;
         uint expirey;
         uint betChoices;
         address payable wagerCreator;
-        //Bets
     }
-
-    Wager[] public Wagers;
 
     struct Bet {
         address payable bettor;
@@ -49,19 +54,22 @@ contract OdinsOdds is IDAOmock {
         uint256 period;
     }
 
-    // constructor() {
-    //     OdinsOwner = msg.sender;
-    // }
-
-    // function createWager(
-    //     uint _time,
-    //     uint _expiry,
-    //     uint _betChoices
-    // ) public returns (Wager memory) {
-    //     Wager memory newWager = Wager(_time, _expiry, _betChoices, msg.sender);
-    //     wager.push(Wager);
-    //     return newWager;
-    // }
+    function createWager(
+        uint _time,
+        uint _expiry,
+        uint _betChoices
+    ) public returns (Wager memory) {
+        Wager memory newWager = Wager(
+            nextWagerId,
+            _time,
+            _expiry,
+            _betChoices,
+            payable(msg.sender)
+        );
+        wagersMap[nextWagerId] = newWager;
+        nextWagerId++;
+        return newWager;
+    }
 
     // function placeBet(uint outcome) public payable {
     //     require(outcome < NUM_OUTCOMES, "Invalid outcome");
