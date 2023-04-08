@@ -71,17 +71,17 @@ contract OdinsOdds is IDAOmock {
         return newWager;
     }
 
-    // function placeBet(uint outcome) public payable {
-    //     require(outcome < NUM_OUTCOMES, "Invalid outcome");
-    //     require(msg.value > 0, "Invalid amount");
+    function placeBet(uint outcome, uint wager) public payable {
+        // require(outcome < NUM_OUTCOMES, "Invalid outcome");
+        // require(msg.value > 0, "Invalid amount");
 
-    //     bets[msg.sender][outcome] += msg.value;
-    //     totalBetsByOutcome[outcome] += msg.value;
-    //     totalPool += msg.value;
+        // bets[msg.sender][outcome] += msg.value;
+        // totalBetsByOutcome[outcome] += msg.value;
+        // totalPool += msg.value;
 
-    //     emit BetPlaced(msg.sender, outcome, msg.value);
+        // emit BetPlaced(msg.sender, outcome, msg.value);
 
-    // // or make bet with struct
+    // or make bet with struct
 
     // bet[betCount] = _Bet(
     //     // inputs....
