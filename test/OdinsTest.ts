@@ -1,15 +1,15 @@
 const { expect } = require('chai');
 const { ethers } = require('hardhat');
-// import { DepositorCoin } from "../typechain-types";
+// import { Signer } from "../typechain-types";
 import { Signer } from 'ethers';
 
 
 describe('OdinsOdds', function () {
   let odinsOdds: any;
-  let odinsOwner: Signer; 
+  let odinsOwner: Signer, user1: Signer, user2: Signer; ; 
   
   beforeEach(async () => {
-		[odinsOwner] = await ethers.getSigners();
+		[odinsOwner, user1, user2] = await ethers.getSigners();
     const OodinsOdds = await ethers.getContractFactory('OdinsOdds');
     odinsOdds = await OodinsOdds.deploy();
     await odinsOdds.deployed();
@@ -29,7 +29,11 @@ describe('OdinsOdds', function () {
 	});
 
   it('Should place new bet', async function () {
-  
+    await odinsOdds.connect(odinsOwner).createWager(5,10,2);
+    await odinsOdds.connect(odinsOwner).createWager(1,2,2);
+    await odinsOdds.connect(user1).placeBet(1,0,40000000)
+    const bet = await odinsOdds.getBet(0,0)
+    expect(bet.amount).to.equal(40000000)
   });
 
 });

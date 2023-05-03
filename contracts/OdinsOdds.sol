@@ -4,14 +4,13 @@ pragma solidity ^0.8.9;
 /*
 TODO
 [] find out on chain data to use (try with aavegotchi or find something else)
-[] user can create bets figure out what inputes will be needed
+[X] user can create bets figure out what inputes will be needed
     inputs 
         time 
         expirey
         bet options
         address
 
-[] use should be able to make as many options as they want start with 4 for now
 [] locking mechanism for users to deposit into option the want to bet on
 [] add chunks of time that users can bet
 [] time based distrebution mecanism 
@@ -29,6 +28,7 @@ contract OdinsOdds is IDAOmock {
     uint public constant NUM_PERIODS = 4;
     uint256[4] public REWARD_PERCENTAGES = [40, 30, 20, 10];
     uint256 public nextWagerId;
+    Bet[] public bet;
 
     mapping(uint256 => Wager) public wagersMap;
 
@@ -38,13 +38,13 @@ contract OdinsOdds is IDAOmock {
 
     // event BetPlaced(address indexed user, uint outcome, uint amount);
 
-    // TODO Link wagers and bets together have an array of bets connected to it's associated wager
     struct Wager {
         uint ID;
         uint time;
         uint expirey;
         uint betChoices;
         address payable wagerCreator;
+        Bet[] bets;
     }
 
     struct Bet {
@@ -54,41 +54,49 @@ contract OdinsOdds is IDAOmock {
         uint256 period;
     }
 
+    enum Stage {
+        beginning,
+        middle,
+        end
+    }
+
     function createWager(
         uint _time,
         uint _expiry,
         uint _betChoices
-    ) public returns (Wager memory) {
-        Wager memory newWager = Wager(
-            nextWagerId,
-            _time,
-            _expiry,
-            _betChoices,
-            payable(msg.sender)
-        );
-        wagersMap[nextWagerId] = newWager;
+    ) public returns (uint256) {
+        Wager storage newWager = wagersMap[nextWagerId];
+        newWager.ID = nextWagerId;
+        newWager.time = _time;
+        newWager.expirey = _expiry;
+        newWager.betChoices = _betChoices;
+        newWager.wagerCreator = payable(msg.sender);
         nextWagerId++;
-        return newWager;
+
+        return newWager.ID;
     }
 
-    function placeBet(uint outcome, uint wager) public payable {
-        // require(outcome < NUM_OUTCOMES, "Invalid outcome");
-        // require(msg.value > 0, "Invalid amount");
+    function placeBet(
+        uint _outcome,
+        uint _wager,
+        uint256 _amount
+    ) public payable {
+        require(wagersMap[_wager].ID == _wager, "Wager not found");
 
-        // bets[msg.sender][outcome] += msg.value;
-        // totalBetsByOutcome[outcome] += msg.value;
-        // totalPool += msg.value;
+        Bet memory newBet = Bet({
+            bettor: payable(msg.sender),
+            outcome: _outcome,
+            amount: _amount,
+            period: 0
+        });
 
-        // emit BetPlaced(msg.sender, outcome, msg.value);
+        wagersMap[_wager].bets.push(newBet);
+    }
 
-    // or make bet with struct
-
-    // bet[betCount] = _Bet(
-    //     // inputs....
-    // // address payable bettor;
-    // // // Outcome outcome;
-    // // uint256 amount;
-    // // uint256 period;
-    // // )
-    // }
+    function getBet(
+        uint256 _wagerId,
+        uint256 _index
+    ) public view returns (Bet memory) {
+        return wagersMap[_wagerId].bets[_index];
+    }
 }
