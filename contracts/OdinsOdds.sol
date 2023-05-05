@@ -11,7 +11,7 @@ TODO
         bet options
         address
 
-[] locking mechanism for users to deposit into option the want to bet on
+[] locking mechanism for users to deposit into option they want to bet on
 [] add chunks of time that users can bet
 [] time based distrebution mecanism 
 [] liqudity pool
@@ -28,6 +28,7 @@ contract OdinsOdds is IDAOmock {
     uint public constant NUM_PERIODS = 4;
     uint256[4] public REWARD_PERCENTAGES = [40, 30, 20, 10];
     uint256 public nextWagerId;
+    uint256 public userTimestamp;
     Bet[] public bet;
 
     mapping(uint256 => Wager) public wagersMap;
@@ -39,17 +40,17 @@ contract OdinsOdds is IDAOmock {
     // event BetPlaced(address indexed user, uint outcome, uint amount);
 
     struct Wager {
-        uint ID;
-        uint time;
-        uint expirey;
-        uint betChoices;
+        uint256 ID;
+        uint256 time;
+        uint256 expirey;
+        uint256 betChoices;
         address payable wagerCreator;
         Bet[] bets;
     }
 
     struct Bet {
         address payable bettor;
-        uint outcome;
+        uint256 outcome;
         uint256 amount;
         uint256 period;
     }
@@ -61,13 +62,13 @@ contract OdinsOdds is IDAOmock {
     }
 
     function createWager(
-        uint _time,
-        uint _expiry,
-        uint _betChoices
+        uint256 _unixTime,
+        uint256 _expiry,
+        uint256 _betChoices
     ) public returns (uint256) {
         Wager storage newWager = wagersMap[nextWagerId];
         newWager.ID = nextWagerId;
-        newWager.time = _time;
+        newWager.time = _unixTime;
         newWager.expirey = _expiry;
         newWager.betChoices = _betChoices;
         newWager.wagerCreator = payable(msg.sender);
@@ -77,8 +78,8 @@ contract OdinsOdds is IDAOmock {
     }
 
     function placeBet(
-        uint _outcome,
-        uint _wager,
+        uint256 _outcome,
+        uint256 _wager,
         uint256 _amount
     ) public payable {
         require(wagersMap[_wager].ID == _wager, "Wager not found");
@@ -98,5 +99,17 @@ contract OdinsOdds is IDAOmock {
         uint256 _index
     ) public view returns (Bet memory) {
         return wagersMap[_wagerId].bets[_index];
+    }
+
+    // check time in wager mapping
+    function hasWagerEnded(uint256 _wagerID) public view returns (bool) {
+        return block.timestamp >= wagersMap[_wagerID].time;
+    }
+
+    // ============ Private Functions ============
+
+    // frontend needs function that converts regular time to Unix Epoch time
+    function setUserTimestamp(uint256 _userTimestamp) private {
+        userTimestamp = _userTimestamp;
     }
 }
