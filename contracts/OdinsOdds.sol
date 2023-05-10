@@ -19,6 +19,10 @@ TODO
     choose winning group option
     math for time period distrabution
 */
+
+// TODO finish the interface
+// TODO setup the Factory Pattern
+
 //contracts/mocks/IDAOmock.sol
 import "./mocks/IDAOmock.sol";
 
@@ -77,17 +81,13 @@ contract OdinsOdds is IDAOmock {
         return newWager.ID;
     }
 
-    function placeBet(
-        uint256 _outcome,
-        uint256 _wager,
-        uint256 _amount
-    ) public payable {
+    function placeBet(uint256 _outcome, uint256 _wager) public payable {
         require(wagersMap[_wager].ID == _wager, "Wager not found");
 
         Bet memory newBet = Bet({
             bettor: payable(msg.sender),
             outcome: _outcome,
-            amount: _amount,
+            amount: msg.value,
             period: 0
         });
 

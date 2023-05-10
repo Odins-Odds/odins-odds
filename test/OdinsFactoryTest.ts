@@ -1,0 +1,52 @@
+const { expect } = require('chai');
+const { ethers } = require('hardhat');
+// import { Signer } from "../typechain-types";
+import { Signer } from 'ethers';
+
+
+describe('OdinsOddsFactory', function () {
+  let odinsOdds: any;
+  let odinsOwner: Signer, user1: Signer, user2: Signer; ; 
+  
+  beforeEach(async () => {
+		[odinsOwner, user1, user2] = await ethers.getSigners();
+    const OodinsOdds = await ethers.getContractFactory('OdinsOddsFactory');
+    odinsOdds = await OodinsOdds.deploy();
+    await odinsOdds.deployed();
+  });
+
+  it('deployer address owns the odins odds contract', async function () {
+    const contractOwner = await odinsOdds.odinsOwner();
+    const odinsOwnerAddress = await odinsOwner.getAddress();
+    expect(contractOwner).to.equal(odinsOwnerAddress);
+	});
+
+  // it('Should return new wager and add new wager to mapping', async function () {
+  //   await odinsOdds.connect(odinsOwner).createWager(5,10,2);
+  //   await odinsOdds.connect(odinsOwner).createWager(1,2,2);
+  //   // await odinsOdds.connect(odinsOwner).createWager(4,5,6);
+  //   const retrievedMapping = await odinsOdds.connect(odinsOwner).wagersMap(1);
+  //   expect(retrievedMapping.ID).to.equal(1);
+	// });
+
+  // it('Should place new bet', async function () {
+  //   const unixHourAhead = Math.floor(Date.now() / 1000) + 3600;
+  //   await odinsOdds.connect(odinsOwner).createWager(unixHourAhead,10,2);
+  //   await odinsOdds.connect(odinsOwner).createWager(unixHourAhead,2,2);
+  //   // await odinsOdds.connect(user1).placeBet(1,0,40000000);
+  //   await odinsOdds.connect(user1).placeBet(1, 0, { value: ethers.utils.parseEther('1') });
+  //   const bet = await odinsOdds.getBet(0,0);
+  //   expect(bet.amount).to.equal(ethers.utils.parseEther('1'));
+  // });
+
+  // it('Should checks if wager ended or not', async function () {
+  //   const unixHourAhead = Math.floor(Date.now() / 1000) + 3600;
+  //   await odinsOdds.connect(odinsOwner).createWager(unixHourAhead,10,2);
+  //   const futureTimeStamp = await odinsOdds.connect(user1).hasWagerEnded(0);
+  //   await odinsOdds.connect(odinsOwner).createWager(1683310434,10,2);
+  //   const pastTimeStamp = await odinsOdds.connect(user1).hasWagerEnded(1);
+  //   expect(futureTimeStamp).to.equal(false);
+  //   expect(pastTimeStamp).to.equal(true);
+  // });
+
+});
