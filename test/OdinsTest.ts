@@ -25,6 +25,7 @@ describe('OdinsOdds', function () {
     await odinsOdds.connect(odinsOwner).createWager(1,2,2);
     // await odinsOdds.connect(odinsOwner).createWager(4,5,6);
     const retrievedMapping = await odinsOdds.connect(odinsOwner).wagersMap(1);
+    console.log(retrievedMapping);
     expect(retrievedMapping.ID).to.equal(1);
 	});
 

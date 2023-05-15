@@ -20,9 +20,6 @@ TODO
     math for time period distrabution
 */
 
-// TODO finish the interface
-// TODO setup the Factory Pattern
-
 //contracts/mocks/IDAOmock.sol
 import "./mocks/IDAOmock.sol";
 

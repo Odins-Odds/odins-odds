@@ -84,6 +84,12 @@ contract Wager {
         bets.push(newBet);
     }
 
+    // ======================== Getter Functions ========================
+
+    function getContractID() public view returns (uint256) {
+        return ID;
+    }
+
     function getBet(uint256 _index) public view returns (Bet memory) {
         return bets[_index];
     }
