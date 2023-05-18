@@ -1,6 +1,26 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
+/*
+TODO
+[] find out on chain data to use (try with aavegotchi or find something else)
+[X] user can create bets figure out what inputes will be needed
+    inputs 
+        time 
+        expirey
+        bet options
+        address
+
+[X] make wagers
+[X] make bets
+[] add chunks of time that users can bet
+[] time based distrebution mecanism 
+[] liqudity pool
+[] distrabution 40%, 30%, 20%, 10%
+    choose winning group option
+    math for time period distrabution
+*/
+
 import "./interfaces/IGame.sol";
 
 contract OdinsOddsFactory {
@@ -43,16 +63,26 @@ contract Wager {
     uint256 public time;
     uint256 public expiry;
     uint256 public betChoices;
-    address payable public wagerCreator;
+    address payable public wagerOwner;
     address gameInstance;
+    Stage wagerState;
+    string public gameResult;
 
     Bet[] public bets;
 
     struct Bet {
         address payable bettor;
-        uint256 outcome;
+        uint256 prediction;
         uint256 amount;
-        uint256 period;
+        uint256 phase;
+    }
+
+    enum Stage {
+        phase1,
+        phase2,
+        phase3,
+        phase4,
+        end
     }
 
     constructor(
@@ -62,7 +92,7 @@ contract Wager {
         uint256 _unixTime,
         uint256 _expiry,
         uint256 _betChoices,
-        address payable _wagerCreator
+        address payable _wagerOwner
     ) {
         gameContract = _gameContract;
         gameID = _gameId;
@@ -70,18 +100,40 @@ contract Wager {
         time = _unixTime;
         expiry = _expiry;
         betChoices = _betChoices;
-        wagerCreator = _wagerCreator;
+        wagerOwner = _wagerOwner;
+        wagerState = Stage.phase1;
     }
 
-    function placeBet(uint256 _outcome) public payable {
+    function placeBet(uint256 _prediction) public payable {
+        require(
+            _prediction == 1 || _prediction == 2,
+            "Invalid prediction. Use 1 for Red, 2 for Blue"
+        );
         Bet memory newBet = Bet({
             bettor: payable(msg.sender),
-            outcome: _outcome,
+            prediction: _prediction,
             amount: msg.value,
-            period: 0
+            phase: 0
         });
 
         bets.push(newBet);
+    }
+
+    function checkGameResult() public {
+        IGame game = IGame(gameContract);
+        gameResult = game.getGameResult(gameID);
+
+        if (
+            keccak256(abi.encodePacked(gameResult)) ==
+            keccak256(abi.encodePacked("Red"))
+        ) {
+            // distribute winnings for red
+        } else if (
+            keccak256(abi.encodePacked(gameResult)) ==
+            keccak256(abi.encodePacked("Blue"))
+        ) {
+            // distribute winnings for blue
+        }
     }
 
     // ======================== Getter Functions ========================
@@ -96,5 +148,9 @@ contract Wager {
 
     function hasWagerEnded() public view returns (bool) {
         return block.timestamp >= time;
+    }
+
+    function getWagerStage() public view returns (Stage) {
+        return wagerState;
     }
 }

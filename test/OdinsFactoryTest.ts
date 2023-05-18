@@ -55,14 +55,25 @@ describe('OdinsOddsFactory', function () {
       wager1 = new ethers.Contract(firstWagerAddress, wagerJson.abi, user1);
     });
 
-    it('create new wager contract is created', async function () {
+    it('should create new wager contract', async function () {
       const wager1ID = await wager1.connect(user1).getContractID();
       expect(wager1ID).to.equal(0);
     });
 
-    it('', async function () {
-      const wager1ID = await wager1.connect(user1).getContractID();
-      expect(wager1ID).to.equal(0);
+    it('can place bets', async function () {
+      await wager1.placeBet(1, { value: ethers.utils.parseEther('1') })
+      await wager1.connect(user2).placeBet(2, { value: ethers.utils.parseEther('1.5') })
+      const bet1 = await wager1.getBet(0)
+      const bet2 = await wager1.getBet(1)
+      expect(bet1.amount).to.equal(ethers.utils.parseEther('1'));
+      expect(bet2.amount).to.equal(ethers.utils.parseEther('1.5'));
+      expect(bet1.prediction).to.equal(1);
+      expect(bet2.prediction).to.equal(2);
+    });
+
+    it('should reject bad bets', async function () {
+      const badBet = wager1.placeBet(3, { value: ethers.utils.parseEther('1') })
+      await expect(badBet).to.be.revertedWith('Invalid prediction. Use 1 for Red, 2 for Blue');
     });
 
     // TODO when event is triggered call contract to update the state of wager

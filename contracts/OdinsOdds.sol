@@ -1,25 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-/*
-TODO
-[] find out on chain data to use (try with aavegotchi or find something else)
-[X] user can create bets figure out what inputes will be needed
-    inputs 
-        time 
-        expirey
-        bet options
-        address
-
-[] locking mechanism for users to deposit into option they want to bet on
-[] add chunks of time that users can bet
-[] time based distrebution mecanism 
-[] liqudity pool
-[] distrabution 40%, 30%, 20%, 10%
-    choose winning group option
-    math for time period distrabution
-*/
-
 //contracts/mocks/IDAOmock.sol
 import "./mocks/IDAOmock.sol";
 
