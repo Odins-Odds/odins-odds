@@ -15,7 +15,6 @@ TODO
 [X] make bets
 [] add chunks of time that users can bet
 [] time based distrebution mecanism 
-[] liqudity pool
 [] distrabution 40%, 30%, 20%, 10%
     choose winning group option
     math for time period distrabution
@@ -74,7 +73,7 @@ contract Wager {
         address payable bettor;
         uint256 prediction;
         uint256 amount;
-        uint256 phase;
+        Stage phase;
     }
 
     enum Stage {
@@ -109,14 +108,35 @@ contract Wager {
             _prediction == 1 || _prediction == 2,
             "Invalid prediction. Use 1 for Red, 2 for Blue"
         );
+        Stage currentPhase = getCurrentPhase();
+        require(currentPhase != Stage.end, "Wager has ended");
+
         Bet memory newBet = Bet({
             bettor: payable(msg.sender),
             prediction: _prediction,
             amount: msg.value,
-            phase: 0
+            phase: Stage.phase1
         });
 
         bets.push(newBet);
+    }
+
+    function getCurrentPhase() public view returns (Stage) {
+        uint256 duration = expiry - time;
+        uint256 phaseDuration = duration / 4; // 4 phases
+        uint256 elapsed = block.timestamp - time;
+
+        if (elapsed > duration) {
+            return Stage.end;
+        } else if (elapsed > phaseDuration * 3) {
+            return Stage.phase4;
+        } else if (elapsed > phaseDuration * 2) {
+            return Stage.phase3;
+        } else if (elapsed > phaseDuration) {
+            return Stage.phase2;
+        } else {
+            return Stage.phase1;
+        }
     }
 
     function checkGameResult() public {
@@ -127,12 +147,42 @@ contract Wager {
             keccak256(abi.encodePacked(gameResult)) ==
             keccak256(abi.encodePacked("Red"))
         ) {
-            // distribute winnings for red
+            distributeWinnings(1);
         } else if (
             keccak256(abi.encodePacked(gameResult)) ==
             keccak256(abi.encodePacked("Blue"))
         ) {
-            // distribute winnings for blue
+            distributeWinnings(2);
+        }
+    }
+
+    function distributeWinnings(uint256 winningTeam) private {
+        uint256 totalWinnings = address(this).balance;
+        uint256[] memory distribution = new uint256[](4);
+        distribution[0] = (totalWinnings * 40) / 100; // Phase 1 gets 40%
+        distribution[1] = (totalWinnings * 30) / 100; // Phase 2 gets 30%
+        distribution[2] = (totalWinnings * 20) / 100; // Phase 3 gets 20%
+        distribution[3] = (totalWinnings * 10) / 100; // Phase 4 gets 10%
+
+        // Calculate the total amount of winning bets in each phase
+        uint256[4] memory totalPhaseBets = [0, 0, 0, 0];
+        for (uint256 i = 0; i < bets.length; i++) {
+            if (bets[i].prediction == winningTeam) {
+                totalPhaseBets[uint256(bets[i].phase)] += bets[i].amount;
+            }
+        }
+
+        // Distribute the winnings
+        for (uint256 i = 0; i < bets.length; i++) {
+            if (
+                bets[i].prediction == winningTeam &&
+                totalPhaseBets[uint256(bets[i].phase)] != 0
+            ) {
+                uint256 winnings = (bets[i].amount *
+                    distribution[uint256(bets[i].phase)]) /
+                    totalPhaseBets[uint256(bets[i].phase)];
+                payable(bets[i].bettor).transfer(winnings);
+            }
         }
     }
 

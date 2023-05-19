@@ -76,6 +76,12 @@ describe('OdinsOddsFactory', function () {
       await expect(badBet).to.be.revertedWith('Invalid prediction. Use 1 for Red, 2 for Blue');
     });
 
+    it('should reject bad bets', async function () {
+
+    });
+
+
+
     // TODO when event is triggered call contract to update the state of wager
 
   });
