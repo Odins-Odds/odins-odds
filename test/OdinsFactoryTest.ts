@@ -6,7 +6,7 @@ import { Signer } from 'ethers';
 
 import { OdinsOddsFactory } from "../typechain-types/OdinsOddsFactory.sol";
 import { Wager } from "../typechain-types/OdinsOddsFactory.sol";
-import { Game } from "../typechain-types/mocks/Game";
+import { Game, } from "../typechain-types/mocks/Game";
 
 let odinsOdds: OdinsOddsFactory;
 let gameContract: Game;
@@ -43,9 +43,10 @@ describe('OdinsOddsFactory', function () {
   describe('Wager', function () {
 
     let wager1: Wager;
+    let gameAddress: string;
 
     beforeEach(async () => {
-      const gameAddress = await gameContract.address;
+      gameAddress = await gameContract.address;
       const unixHourAhead = Math.floor(Date.now() / 1000) + 3600;
       const game1 = await gameContract.connect(user1).games(0);
       const game2 = await gameContract.connect(user1).games(1);
@@ -60,8 +61,13 @@ describe('OdinsOddsFactory', function () {
       expect(wager1ID).to.equal(0);
     });
 
+    it('gets current phase of wager', async function () {
+      const currentPhase = await wager1.connect(user1).getWagerStage();
+      expect(currentPhase).to.equal(0);
+    });
+
     it('can place bets', async function () {
-      await wager1.placeBet(1, { value: ethers.utils.parseEther('1') })
+      await wager1.connect(user1).placeBet(1, { value: ethers.utils.parseEther('1') })
       await wager1.connect(user2).placeBet(2, { value: ethers.utils.parseEther('1.5') })
       const bet1 = await wager1.getBet(0)
       const bet2 = await wager1.getBet(1)
@@ -76,34 +82,34 @@ describe('OdinsOddsFactory', function () {
       await expect(badBet).to.be.revertedWith('Invalid prediction. Use 1 for Red, 2 for Blue');
     });
 
-    it('should reject bad bets', async function () {
-
+    
+    it('mock decides winner, updates mapping, emits event, listens for events', async function () {
+      let eventPromise = new Promise<{ gameId: number; status: number }>((resolve, reject) => {
+        gameContract.on('GameResult', (gameId: number, status: number, event: Event) => {
+          // resolve the promise when the event is triggered
+          resolve({ gameId, status });
+        });
+      });
+      const tx = await gameContract.connect(user1).decideWinner(0, true);
+      const receipt = await tx.wait();
+      const game0Mapping = await gameContract.games(0);
+      let { gameId, status } = await eventPromise;
+      // if statement is for typescript checks if event exists first
+      if (receipt.events && receipt.events[0]?.args) {
+        expect(receipt.events[0].args.status).to.equal(1);
+      } else {
+        throw new Error("Events or Args are undefined");
+      }
+      expect(game0Mapping.status).to.equal(1);
+      expect(gameId).to.equal(0);
+      expect(status).to.equal(1);
+      // NOTE: on the front end you can use the event to call a contract do do something end the predictions
     });
-
-
-
-    // TODO when event is triggered call contract to update the state of wager
 
   });
 
 
-  // it('Should return new wager and add new wager to mapping', async function () {
-  //   await odinsOdds.connect(odinsOwner).createWager(5,10,2);
-  //   await odinsOdds.connect(odinsOwner).createWager(1,2,2);
-  //   // await odinsOdds.connect(odinsOwner).createWager(4,5,6);
-  //   const retrievedMapping = await odinsOdds.connect(odinsOwner).wagersMap(1);
-  //   expect(retrievedMapping.ID).to.equal(1);
-	// });
 
-  // it('Should checks if wager ended or not', async function () {
-  //   const unixHourAhead = Math.floor(Date.now() / 1000) + 3600;
-  //   await odinsOdds.connect(odinsOwner).createWager(unixHourAhead,10,2);
-  //   const futureTimeStamp = await odinsOdds.connect(user1).hasWagerEnded(0);
-  //   await odinsOdds.connect(odinsOwner).createWager(1683310434,10,2);
-  //   const pastTimeStamp = await odinsOdds.connect(user1).hasWagerEnded(1);
-  //   expect(futureTimeStamp).to.equal(false);
-  //   expect(pastTimeStamp).to.equal(true);
-  // });
 
 });
 

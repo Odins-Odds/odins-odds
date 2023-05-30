@@ -32,6 +32,7 @@ contract OdinsOddsFactory {
         odinsOwner = msg.sender;
     }
 
+    // creator decieds when people can stop betting
     function createWager(
         address _gameContract,
         uint256 _gameID,
@@ -64,7 +65,7 @@ contract Wager {
     uint256 public betChoices;
     address payable public wagerOwner;
     address gameInstance;
-    Stage wagerState;
+    Stage wagerStage;
     string public gameResult;
 
     Bet[] public bets;
@@ -100,7 +101,7 @@ contract Wager {
         expiry = _expiry;
         betChoices = _betChoices;
         wagerOwner = _wagerOwner;
-        wagerState = Stage.phase1;
+        wagerStage = Stage.phase1;
     }
 
     function placeBet(uint256 _prediction) public payable {
@@ -108,7 +109,7 @@ contract Wager {
             _prediction == 1 || _prediction == 2,
             "Invalid prediction. Use 1 for Red, 2 for Blue"
         );
-        Stage currentPhase = getCurrentPhase();
+        Stage currentPhase = getWagerStage();
         require(currentPhase != Stage.end, "Wager has ended");
 
         Bet memory newBet = Bet({
@@ -121,70 +122,54 @@ contract Wager {
         bets.push(newBet);
     }
 
-    function getCurrentPhase() public view returns (Stage) {
-        uint256 duration = expiry - time;
-        uint256 phaseDuration = duration / 4; // 4 phases
-        uint256 elapsed = block.timestamp - time;
+    // function checkGameResult(_ID) public returns (string memory) {
+    //     // IGame game = IGame(gameContract);
+    //     // gameResult = game.getGameResult(gameID);
+    //     gameResult = getGameResult();
+    //     return gameResult;
 
-        if (elapsed > duration) {
-            return Stage.end;
-        } else if (elapsed > phaseDuration * 3) {
-            return Stage.phase4;
-        } else if (elapsed > phaseDuration * 2) {
-            return Stage.phase3;
-        } else if (elapsed > phaseDuration) {
-            return Stage.phase2;
-        } else {
-            return Stage.phase1;
-        }
-    }
+    //     // if (
+    //     //     keccak256(abi.encodePacked(gameResult)) ==
+    //     //     keccak256(abi.encodePacked("Red"))
+    //     // ) {
+    //     //     // distributeWinnings(1);
+    //     // } else if (
+    //     //     keccak256(abi.encodePacked(gameResult)) ==
+    //     //     keccak256(abi.encodePacked("Blue"))
+    //     // ) {
+    //     //     // distributeWinnings(2);
+    //     // }
+    // }
 
-    function checkGameResult() public {
-        IGame game = IGame(gameContract);
-        gameResult = game.getGameResult(gameID);
+    // function distributeWinnings(uint256 winningTeam) private {
+    //     uint256 totalWinnings = address(this).balance;
+    //     uint256[] memory distribution = new uint256[](4);
+    //     distribution[0] = (totalWinnings * 40) / 100; // Phase 1 gets 40%
+    //     distribution[1] = (totalWinnings * 30) / 100; // Phase 2 gets 30%
+    //     distribution[2] = (totalWinnings * 20) / 100; // Phase 3 gets 20%
+    //     distribution[3] = (totalWinnings * 10) / 100; // Phase 4 gets 10%
 
-        if (
-            keccak256(abi.encodePacked(gameResult)) ==
-            keccak256(abi.encodePacked("Red"))
-        ) {
-            distributeWinnings(1);
-        } else if (
-            keccak256(abi.encodePacked(gameResult)) ==
-            keccak256(abi.encodePacked("Blue"))
-        ) {
-            distributeWinnings(2);
-        }
-    }
+    //     // Calculate the total amount of winning bets in each phase
+    //     uint256[4] memory totalPhaseBets = [0, 0, 0, 0];
+    //     for (uint256 i = 0; i < bets.length; i++) {
+    //         if (bets[i].prediction == winningTeam) {
+    //             totalPhaseBets[uint256(bets[i].phase)] += bets[i].amount;
+    //         }
+    //     }
 
-    function distributeWinnings(uint256 winningTeam) private {
-        uint256 totalWinnings = address(this).balance;
-        uint256[] memory distribution = new uint256[](4);
-        distribution[0] = (totalWinnings * 40) / 100; // Phase 1 gets 40%
-        distribution[1] = (totalWinnings * 30) / 100; // Phase 2 gets 30%
-        distribution[2] = (totalWinnings * 20) / 100; // Phase 3 gets 20%
-        distribution[3] = (totalWinnings * 10) / 100; // Phase 4 gets 10%
-
-        // Calculate the total amount of winning bets in each phase
-        uint256[4] memory totalPhaseBets = [0, 0, 0, 0];
-        for (uint256 i = 0; i < bets.length; i++) {
-            if (bets[i].prediction == winningTeam) {
-                totalPhaseBets[uint256(bets[i].phase)] += bets[i].amount;
-            }
-        }
-
-        // Distribute the winnings
-        for (uint256 i = 0; i < bets.length; i++) {
-            if (
-                bets[i].prediction == winningTeam &&
-                totalPhaseBets[uint256(bets[i].phase)] != 0
-            ) {
-                uint256 winnings = (bets[i].amount *
-                    distribution[uint256(bets[i].phase)]) /
-                    totalPhaseBets[uint256(bets[i].phase)];
-                payable(bets[i].bettor).transfer(winnings);
-            }
-        }
-    }
+    //     // Distribute the winnings
+    //     for (uint256 i = 0; i < bets.length; i++) {
+    //         if (
+    //             bets[i].prediction == winningTeam &&
+    //             totalPhaseBets[uint256(bets[i].phase)] != 0
+    //         ) {
+    //             uint256 winnings = (bets[i].amount *
+    //                 distribution[uint256(bets[i].phase)]) /
+    //                 totalPhaseBets[uint256(bets[i].phase)];
+    //             payable(bets[i].bettor).transfer(winnings);
+    //         }
+    //     }
+    // }
 
     // ======================== Getter Functions ========================
 
@@ -201,6 +186,6 @@ contract Wager {
     }
 
     function getWagerStage() public view returns (Stage) {
-        return wagerState;
+        return wagerStage;
     }
 }
