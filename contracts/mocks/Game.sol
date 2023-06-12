@@ -44,11 +44,10 @@ contract Game {
         emit GameResult(gameId, games[gameId].status);
     }
 
-    // function getGameResult(uint256 gameId) external view returns (GameStatus) {
-    //     require(gameId < gameCount, "Game not found");
-    //     return games[gameId].status;
-    // }
-    
+    function getGameResult(uint256 gameId) external view returns (GameStatus) {
+        require(gameId < gameCount, "Game not found");
+        return games[gameId].status;
+    }
 }
 
 // pragma solidity ^0.8.9;

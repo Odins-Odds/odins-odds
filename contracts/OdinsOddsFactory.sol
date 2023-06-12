@@ -21,6 +21,7 @@ TODO
 */
 
 import "./interfaces/IGame.sol";
+import "hardhat/console.sol";
 
 contract OdinsOddsFactory {
     address public odinsOwner;
@@ -122,24 +123,22 @@ contract Wager {
         bets.push(newBet);
     }
 
-    // function checkGameResult(_ID) public returns (string memory) {
-    //     // IGame game = IGame(gameContract);
-    //     // gameResult = game.getGameResult(gameID);
-    //     gameResult = getGameResult();
-    //     return gameResult;
+    // TODO distribute winnings It will probably be best to allow users to withdraw from contract so create a withdraw function
 
-    //     // if (
-    //     //     keccak256(abi.encodePacked(gameResult)) ==
-    //     //     keccak256(abi.encodePacked("Red"))
-    //     // ) {
-    //     //     // distributeWinnings(1);
-    //     // } else if (
-    //     //     keccak256(abi.encodePacked(gameResult)) ==
-    //     //     keccak256(abi.encodePacked("Blue"))
-    //     // ) {
-    //     //     // distributeWinnings(2);
-    //     // }
-    // }
+    function checkGameResult(uint256 _ID) public view {
+        IGame game = IGame(gameContract);
+        IGame.GameStatus gameStatus = game.getGameResult(_ID);
+        // gameResult = getGameResult();
+        // return gameStatus.;
+        // console.log(game);
+        if (gameStatus == IGame.GameStatus.RedWins) {
+            // distributeWinnings(1);
+            console.log("Red wins distribution");
+        } else if (gameStatus == IGame.GameStatus.BlueWins) {
+            // distributeWinnings(2);
+            console.log("Blue wins distribution");
+        }
+    }
 
     // function distributeWinnings(uint256 winningTeam) private {
     //     uint256 totalWinnings = address(this).balance;
@@ -170,6 +169,33 @@ contract Wager {
     //         }
     //     }
     // }
+
+    mapping(address => uint256) public balances;
+
+    function distributeFunds(
+        address[] memory recipients,
+        uint256[] memory amounts
+    ) public payable {
+        require(
+            recipients.length == amounts.length,
+            "Array lengths do not match"
+        );
+        uint256 total = 0;
+        for (uint i = 0; i < amounts.length; i++) {
+            total += amounts[i];
+        }
+        require(msg.value >= total, "Not enough funds sent");
+        for (uint i = 0; i < recipients.length; i++) {
+            balances[recipients[i]] += amounts[i];
+        }
+    }
+
+    function withdrawFunds() public {
+        uint256 amount = balances[msg.sender];
+        require(amount > 0, "No funds available for withdrawal");
+        balances[msg.sender] = 0;
+        payable(msg.sender).transfer(amount);
+    }
 
     // ======================== Getter Functions ========================
 

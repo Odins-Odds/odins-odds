@@ -6,7 +6,7 @@ import { Signer } from 'ethers';
 
 import { OdinsOddsFactory } from "../typechain-types/OdinsOddsFactory.sol";
 import { Wager } from "../typechain-types/OdinsOddsFactory.sol";
-import { Game, } from "../typechain-types/mocks/Game";
+import { Game } from "../typechain-types/mocks/Game";
 
 let odinsOdds: OdinsOddsFactory;
 let gameContract: Game;
@@ -104,6 +104,17 @@ describe('OdinsOddsFactory', function () {
       expect(gameId).to.equal(0);
       expect(status).to.equal(1);
       // NOTE: on the front end you can use the event to call a contract do do something end the predictions
+    });
+
+    it('finds winner', async function () {
+      await gameContract.decideWinner(0, true);
+      await wager1.checkGameResult(0);
+      const status = await gameContract.getGameResult(0);
+      console.log(status)
+
+      // const game0 = await gameContract.games(0);
+      // expect(game0.status).to.equal(1);
+      // const game1 = await gameContract.games(1);
     });
 
   });
