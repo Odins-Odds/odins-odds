@@ -10,13 +10,19 @@ import { Game } from "../typechain-types/mocks/Game";
 
 let odinsOdds: OdinsOddsFactory;
 let gameContract: Game;
-let odinsOwner: Signer, user1: Signer, user2: Signer; ; 
+let odinsOwner: Signer, user1: Signer, user2: Signer, user3: Signer;  
+
+// speed up time
+async function increaseTime(duration: number) {
+  await ethers.provider.send('evm_increaseTime', [duration]);
+  await ethers.provider.send('evm_mine', []);
+}
 
 describe('OdinsOddsFactory', function () {
 
   
   beforeEach(async () => {
-		[odinsOwner, user1, user2] = await ethers.getSigners();
+		[odinsOwner, user1, user2, user3] = await ethers.getSigners();
     const OdinsOdds = await ethers.getContractFactory('OdinsOddsFactory');
     odinsOdds = await OdinsOdds.deploy();
     await odinsOdds.deployed();
@@ -47,11 +53,13 @@ describe('OdinsOddsFactory', function () {
 
     beforeEach(async () => {
       gameAddress = await gameContract.address;
+      const unixNow = Math.floor(Date.now());
       const unixHourAhead = Math.floor(Date.now() / 1000) + 3600;
+      const unixWeekAhead = Math.floor(Date.now() / 1000) + 604800;
       const game1 = await gameContract.connect(user1).games(0);
       const game2 = await gameContract.connect(user1).games(1);
-      await odinsOdds.connect(odinsOwner).createWager(gameAddress, game1.ID, unixHourAhead,10,2);
-      await odinsOdds.connect(user1).createWager(gameAddress, game2.ID, unixHourAhead,10,2);
+      await odinsOdds.connect(odinsOwner).createWager(gameAddress, game1.ID, unixWeekAhead,2);
+      await odinsOdds.connect(user1).createWager(gameAddress, game2.ID, unixWeekAhead,2);
       const firstWagerAddress = await odinsOdds.wagersMap(0);
       wager1 = new ethers.Contract(firstWagerAddress, wagerJson.abi, user1);
     });
@@ -75,6 +83,15 @@ describe('OdinsOddsFactory', function () {
       expect(bet2.amount).to.equal(ethers.utils.parseEther('1.5'));
       expect(bet1.prediction).to.equal(1);
       expect(bet2.prediction).to.equal(2);
+      const stage1 = await wager1.getWagerStage()
+      console.log(stage1, "stage")
+      
+      console.log(await ethers.provider.getBlockNumber())
+      await increaseTime(3 * 24 * 60 * 60); // Simulate the passing of 3 days
+      console.log(await ethers.provider.getBlockNumber())
+      await wager1.connect(user3).placeBet(1, { value: ethers.utils.parseEther('1.5') })
+      const stage2 = await wager1.getWagerStage()
+      console.log(stage2, "stage")
     });
 
     it('should reject bad bets', async function () {
@@ -108,13 +125,11 @@ describe('OdinsOddsFactory', function () {
 
     it('finds winner', async function () {
       await gameContract.decideWinner(0, true);
-      await wager1.checkGameResult(0);
+      const wagerStatus = await wager1.checkGameResult(0);
       const status = await gameContract.getGameResult(0);
-      console.log(status)
-
-      // const game0 = await gameContract.games(0);
-      // expect(game0.status).to.equal(1);
-      // const game1 = await gameContract.games(1);
+      expect(status).to.equal(1);
+      console.log(wagerStatus);
+      expect(wagerStatus).to.equal("Red wins")
     });
 
   });
