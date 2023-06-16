@@ -88,10 +88,8 @@ contract Wager {
     }
 
     function _setStage() private {
-        console.log(wagerStartTime, "start");
-        console.log(block.timestamp);
         uint256 elapsedTime = block.timestamp - wagerStartTime;
-        console.log(elapsedTime);
+
         uint256 oneFourthTime = totalWagerTime / 4;
 
         if (block.timestamp > expiry) {

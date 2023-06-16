@@ -83,16 +83,8 @@ describe('OdinsOddsFactory', function () {
       expect(bet2.amount).to.equal(ethers.utils.parseEther('1.5'));
       expect(bet1.prediction).to.equal(1);
       expect(bet2.prediction).to.equal(2);
-      const stage1 = await wager1.getWagerStage()
-      console.log(stage1, "stage")
-      
-      console.log(await ethers.provider.getBlockNumber())
-      await increaseTime(3 * 24 * 60 * 60); // Simulate the passing of 3 days
-      console.log(await ethers.provider.getBlockNumber())
-      await wager1.connect(user3).placeBet(1, { value: ethers.utils.parseEther('1.5') })
-      const stage2 = await wager1.getWagerStage()
-      console.log(stage2, "stage")
     });
+
 
     it('should reject bad bets', async function () {
       const badBet = wager1.placeBet(3, { value: ethers.utils.parseEther('1') })
@@ -130,6 +122,29 @@ describe('OdinsOddsFactory', function () {
       expect(status).to.equal(1);
       console.log(wagerStatus);
       expect(wagerStatus).to.equal("Red wins")
+    });
+
+
+    it('updates phases with passing time', async function () {
+      await wager1.connect(user1).placeBet(1, { value: ethers.utils.parseEther('1') })
+      await wager1.connect(user2).placeBet(2, { value: ethers.utils.parseEther('1.5') })
+      const stage0 = await wager1.getWagerStage()
+      await increaseTime(2 * 24 * 60 * 60); // Simulate the passing of 3 days
+      await wager1.connect(user3).placeBet(1, { value: ethers.utils.parseEther('1.5') })
+      const stage1 = await wager1.getWagerStage()
+      await increaseTime(2 * 24 * 60 * 60); 
+      await wager1.connect(user3).placeBet(1, { value: ethers.utils.parseEther('1.5') })
+      const stage2 = await wager1.getWagerStage()
+      await increaseTime(2 * 24 * 60 * 60); 
+      await wager1.connect(user3).placeBet(1, { value: ethers.utils.parseEther('1.5') })
+      const stage3 = await wager1.getWagerStage()
+      await increaseTime(4 * 24 * 60 * 60); 
+      const end = wager1.connect(user3).placeBet(1, { value: ethers.utils.parseEther('1.5') })
+      expect(stage0).to.equal(0);
+      expect(stage1).to.equal(1);
+      expect(stage2).to.equal(2);
+      expect(stage3).to.equal(3);
+      await expect(end).to.be.revertedWith('Wager has ended');
     });
 
   });
