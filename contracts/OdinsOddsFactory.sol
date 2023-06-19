@@ -18,7 +18,6 @@ contract OdinsOddsFactory {
     function createWager(
         address _gameContract,
         uint256 _gameID,
-        // uint256 _unixTime,
         uint256 _expiry,
         uint256 _betChoices
     ) public returns (uint256) {
@@ -50,7 +49,10 @@ contract Wager {
     Stage wagerStage;
     string public gameResult;
 
-    Bet[] public bets;
+    mapping(Stage => Bet[]) public phaseBets;
+    mapping(address => uint256) public winnings;
+
+    event CheckGameResult(string message);
 
     struct Bet {
         address payable bettor;
@@ -71,7 +73,6 @@ contract Wager {
         address _gameContract,
         uint256 _gameId,
         uint256 _ID,
-        // uint256 _unixTime,
         uint256 _expiry,
         uint256 _betChoices,
         address payable _wagerOwner
@@ -120,83 +121,78 @@ contract Wager {
             amount: msg.value,
             phase: wagerStage
         });
-
-        bets.push(newBet);
+        phaseBets[wagerStage].push(newBet);
     }
 
-    // TODO distribute winnings It will probably be best to allow users to withdraw from contract so create a withdraw function
-
-    function checkGameResult(uint256 _ID) public view returns (string memory) {
+    function checkGameResult(uint256 _ID) public returns (string memory) {
         IGame game = IGame(gameContract);
         IGame.GameStatus gameStatus = game.getGameResult(_ID);
 
         if (gameStatus == IGame.GameStatus.RedWins) {
-            // distributeWinnings(1);
+            _distributeWinnings(1);
+            emit CheckGameResult("Red wins");
             return "Red wins";
         } else if (gameStatus == IGame.GameStatus.BlueWins) {
-            // distributeWinnings(2);
+            _distributeWinnings(2);
+            emit CheckGameResult("Blue wins");
             return "Blue wins";
         } else {
+            emit CheckGameResult("No result yet");
             return "No result yet";
         }
     }
 
-    // function distributeWinnings(uint256 winningTeam) private {
-    //     uint256 totalWinnings = address(this).balance;
-    //     uint256[] memory distribution = new uint256[](4);
-    //     distribution[0] = (totalWinnings * 40) / 100; // Phase 1 gets 40%
-    //     distribution[1] = (totalWinnings * 30) / 100; // Phase 2 gets 30%
-    //     distribution[2] = (totalWinnings * 20) / 100; // Phase 3 gets 20%
-    //     distribution[3] = (totalWinnings * 10) / 100; // Phase 4 gets 10%
+    function _distributeWinnings(uint256 winningChoice) private {
+        uint256 totalPool = address(this).balance;
+        uint256[] memory phaseTotalBets = new uint256[](4);
+        uint256[] memory phasePools = new uint256[](4);
+        uint256 totalPhaseBets = 0;
 
-    //     // Calculate the total amount of winning bets in each phase
-    //     uint256[4] memory totalPhaseBets = [0, 0, 0, 0];
-    //     for (uint256 i = 0; i < bets.length; i++) {
-    //         if (bets[i].prediction == winningTeam) {
-    //             totalPhaseBets[uint256(bets[i].phase)] += bets[i].amount;
-    //         }
-    //     }
-
-    //     // Distribute the winnings
-    //     for (uint256 i = 0; i < bets.length; i++) {
-    //         if (
-    //             bets[i].prediction == winningTeam &&
-    //             totalPhaseBets[uint256(bets[i].phase)] != 0
-    //         ) {
-    //             uint256 winnings = (bets[i].amount *
-    //                 distribution[uint256(bets[i].phase)]) /
-    //                 totalPhaseBets[uint256(bets[i].phase)];
-    //             payable(bets[i].bettor).transfer(winnings);
-    //         }
-    //     }
-    // }
-
-    mapping(address => uint256) public balances;
-
-    function distributeFunds(
-        address[] memory recipients,
-        uint256[] memory amounts
-    ) public payable {
-        require(
-            recipients.length == amounts.length,
-            "Array lengths do not match"
-        );
-        uint256 total = 0;
-        for (uint i = 0; i < amounts.length; i++) {
-            total += amounts[i];
+        // Calculate total bets for each phase and the grand total.
+        for (uint i = 0; i < 4; i++) {
+            Bet[] storage bets = phaseBets[Stage(i)];
+            for (uint j = 0; j < bets.length; j++) {
+                if (bets[j].prediction == winningChoice) {
+                    phaseTotalBets[i] += bets[j].amount;
+                }
+            }
+            totalPhaseBets += phaseTotalBets[i];
         }
-        require(msg.value >= total, "Not enough funds sent");
-        for (uint i = 0; i < recipients.length; i++) {
-            balances[recipients[i]] += amounts[i];
+
+        // Calculate phase pools based on their total bets.
+        for (uint i = 0; i < 4; i++) {
+            if (totalPhaseBets > 0) {
+                phasePools[i] =
+                    (totalPool * phaseTotalBets[i]) /
+                    totalPhaseBets;
+            } else {
+                phasePools[i] = 0;
+            }
+        }
+
+        // Distribute the winnings.
+        for (uint i = 0; i < 4; i++) {
+            Bet[] storage bets = phaseBets[Stage(i)];
+            for (uint j = 0; j < bets.length; j++) {
+                if (bets[j].prediction == winningChoice) {
+                    uint256 winnerShare = phasePools[i];
+                    if (phaseTotalBets[i] > 0) {
+                        winnerShare =
+                            (phasePools[i] * bets[j].amount) /
+                            phaseTotalBets[i];
+                    }
+                    winnings[bets[j].bettor] += winnerShare;
+                }
+            }
         }
     }
 
-    // function withdrawFunds() public {
-    //     uint256 amount = balances[msg.sender];
-    //     require(amount > 0, "No funds available for withdrawal");
-    //     balances[msg.sender] = 0;
-    //     payable(msg.sender).transfer(amount);
-    // }
+    function withdrawWinnings() public {
+        uint256 amount = winnings[msg.sender];
+        require(amount > 0, "No winnings available for withdrawal");
+        winnings[msg.sender] = 0;
+        payable(msg.sender).transfer(amount);
+    }
 
     // ======================== Getter Functions ========================
 
@@ -204,8 +200,11 @@ contract Wager {
         return ID;
     }
 
-    function getBet(uint256 _index) public view returns (Bet memory) {
-        return bets[_index];
+    function getBet(
+        Stage _stage,
+        uint256 _index
+    ) public view returns (Bet memory) {
+        return phaseBets[_stage][_index];
     }
 
     function hasWagerEnded() public view returns (bool) {

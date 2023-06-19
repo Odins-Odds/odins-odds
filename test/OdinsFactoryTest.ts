@@ -77,8 +77,8 @@ describe('OdinsOddsFactory', function () {
     it('can place bets', async function () {
       await wager1.connect(user1).placeBet(1, { value: ethers.utils.parseEther('1') })
       await wager1.connect(user2).placeBet(2, { value: ethers.utils.parseEther('1.5') })
-      const bet1 = await wager1.getBet(0)
-      const bet2 = await wager1.getBet(1)
+      const bet1 = await wager1.getBet(0,0)
+      const bet2 = await wager1.getBet(0,1)
       expect(bet1.amount).to.equal(ethers.utils.parseEther('1'));
       expect(bet2.amount).to.equal(ethers.utils.parseEther('1.5'));
       expect(bet1.prediction).to.equal(1);
@@ -117,7 +117,12 @@ describe('OdinsOddsFactory', function () {
 
     it('finds winner', async function () {
       await gameContract.decideWinner(0, true);
-      const wagerStatus = await wager1.checkGameResult(0);
+      const checkGameResultTx = await wager1.checkGameResult(0);
+      // wait for the transaction to be mined
+      const receipt = await checkGameResultTx.wait();
+      // get the result from the logs
+      const resultLog = receipt.events?.find((event) => event.event === "CheckGameResult");
+      const wagerStatus = resultLog?.args?.message;
       const status = await gameContract.getGameResult(0);
       expect(status).to.equal(1);
       console.log(wagerStatus);
@@ -125,11 +130,47 @@ describe('OdinsOddsFactory', function () {
     });
 
 
+    // TODO update this test to use phases and time together
+    it('should distribute winnings correctly', async function () {
+      // Place bets
+      await wager1.connect(user1).placeBet(1, { value: ethers.utils.parseEther('1') });
+      await wager1.connect(user2).placeBet(1, { value: ethers.utils.parseEther('2') });
+      await wager1.connect(user3).placeBet(2, { value: ethers.utils.parseEther('1') });
+      // Decide the winner (assume 1 is the winner)
+      await gameContract.decideWinner(0, true);
+      // Distribute winnings
+      await wager1.checkGameResult(0);
+      // Check the winnings of each user
+      const winnings1 = await wager1.winnings(await user1.getAddress());
+      const winnings2 = await wager1.winnings(await user2.getAddress());
+      const winnings3 = await wager1.winnings(await user3.getAddress());
+      const totalPool = await ethers.provider.getBalance(wager1.address);
+      console.log(winnings1, winnings2, winnings3);
+      expect(totalPool).to.equal(ethers.utils.parseEther('4'))
+      expect(winnings1).to.equal('1333333333333333333'); // roughly 1/3 of the total pool
+      expect(winnings2).to.equal('2666666666666666666'); // roughly 2/3 of the total pool
+      expect(winnings3).to.equal(0); // lost, so no winnings
+  });
+
+    // it('should allow winners to withdraw their winnings', async function () {
+    //     // User1 tries to withdraw their winnings
+    //     const user1InitialBalance = await user1.getBalance();
+    //     await wager1.connect(user1).withdrawWinnings();
+    //     const user1FinalBalance = await user1.getBalance();
+    //     expect(user1FinalBalance).to.be.gt(user1InitialBalance);
+    // });
+
+    it('should not allow non-winners to withdraw winnings', async function () {
+        // User3 (who lost) tries to withdraw winnings
+        const badWithdrawal = wager1.connect(user3).withdrawWinnings();
+        await expect(badWithdrawal).to.be.revertedWith('No winnings available for withdrawal');
+    });
+
     it('updates phases with passing time', async function () {
       await wager1.connect(user1).placeBet(1, { value: ethers.utils.parseEther('1') })
       await wager1.connect(user2).placeBet(2, { value: ethers.utils.parseEther('1.5') })
       const stage0 = await wager1.getWagerStage()
-      await increaseTime(2 * 24 * 60 * 60); // Simulate the passing of 3 days
+      await increaseTime(2 * 24 * 60 * 60); // Simulate the passing of 2 days
       await wager1.connect(user3).placeBet(1, { value: ethers.utils.parseEther('1.5') })
       const stage1 = await wager1.getWagerStage()
       await increaseTime(2 * 24 * 60 * 60); 
@@ -149,9 +190,4 @@ describe('OdinsOddsFactory', function () {
 
   });
 
-
-
-
 });
-
-
