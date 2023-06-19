@@ -152,13 +152,18 @@ describe('OdinsOddsFactory', function () {
       expect(winnings3).to.equal(0); // lost, so no winnings
   });
 
-    // it('should allow winners to withdraw their winnings', async function () {
-    //     // User1 tries to withdraw their winnings
-    //     const user1InitialBalance = await user1.getBalance();
-    //     await wager1.connect(user1).withdrawWinnings();
-    //     const user1FinalBalance = await user1.getBalance();
-    //     expect(user1FinalBalance).to.be.gt(user1InitialBalance);
-    // });
+    it('should allow winners to withdraw their winnings', async function () {
+        await wager1.connect(user1).placeBet(1, { value: ethers.utils.parseEther('1') });
+        await wager1.connect(user2).placeBet(1, { value: ethers.utils.parseEther('2') });
+        await wager1.connect(user3).placeBet(2, { value: ethers.utils.parseEther('1') });
+        await gameContract.decideWinner(0, true);
+        // Distribute winnings
+        await wager1.checkGameResult(0);
+        const user1InitialBalance = await user1.getBalance();
+        await wager1.connect(user1).withdrawWinnings();
+        const user1FinalBalance = await user1.getBalance();
+        expect(user1FinalBalance).to.be.gt(user1InitialBalance);
+    });
 
     it('should not allow non-winners to withdraw winnings', async function () {
         // User3 (who lost) tries to withdraw winnings
