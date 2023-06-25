@@ -12,7 +12,7 @@ let odinsOdds: OdinsOddsFactory;
 let gameContract: Game;
 let odinsOwner: Signer, user1: Signer, user2: Signer, user3: Signer;  
 
-// speed up time
+// speeds up time
 async function increaseTime(duration: number) {
   await ethers.provider.send('evm_increaseTime', [duration]);
   await ethers.provider.send('evm_mine', []);
