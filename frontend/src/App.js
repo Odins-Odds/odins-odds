@@ -1,23 +1,23 @@
-import logo from './logo.svg';
 import './App.css';
+import { useEffect, useState } from 'react';
+import { getBlockchain } from './utils/common'
+import NavBar from "./components/navbar.js";
+import OdinsOddsFactory from './components/OdinsOddsFactory.js';
 
 function App() {
+
+  const [blockchain, setBlockchain] = useState({});
+
+  useEffect(() => {
+    (async () => {
+      setBlockchain(await getBlockchain());
+    })();
+  },[]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div >
+    <NavBar />
+    <OdinsOddsFactory blockchain={blockchain} />
     </div>
   );
 }

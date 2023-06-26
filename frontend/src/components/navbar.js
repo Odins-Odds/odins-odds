@@ -49,7 +49,7 @@ const NavBar = () => {
             noWrap
             component="div"
             sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block', cursor: 'pointer' } }}>
-          Yield Aggregator
+          Odins Odds
         </Typography>
         <Typography       
           sx={{ pl:2}}
