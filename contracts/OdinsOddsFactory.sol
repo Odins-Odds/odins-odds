@@ -34,6 +34,10 @@ contract OdinsOddsFactory {
 
         return nextWagerId - 1;
     }
+
+    function getWager(uint256 _wagerID) public view returns (Wager) {
+        return wagersMap[_wagerID];
+    }
 }
 
 contract Wager {

@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-//contracts/mocks/IDAOmock.sol
-import "./mocks/IDAOmock.sol";
-
-contract OdinsOdds is IDAOmock {
+contract OdinsOdds {
     address OdinsOwner;
 
     uint public constant NUM_PERIODS = 4;

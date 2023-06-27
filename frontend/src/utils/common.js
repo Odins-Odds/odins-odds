@@ -1,6 +1,6 @@
 import { ethers, Contract } from "ethers";
 import OdinsOddsFactoryABI from "../ABIs/OdinsOddsFactory.json";
-// import ContractAddress from "../ABIs/contract-address.json";
+import ContractAddress from "../ABIs/contract-address.json";
 import Swal from "sweetalert2";
 
 // connect ethers to metamask
@@ -12,19 +12,19 @@ const getBlockchain = async () => {
       const signer = provider.getSigner();
       const signerAddress = await signer.getAddress();
 
-      // const aggregator = new Contract(
-      //   ContractAddress.Aggregator,
-      //   OdinsOddsFactoryABI.abi,
-      //   signer
-      // );
-
-      // return { signerAddress, aggregator };
+      const odinsOddsFactory = new Contract(
+        ContractAddress.odinsOddsFactory,
+        OdinsOddsFactoryABI.abi,
+        signer
+      );
+      
+      return { signerAddress, odinsOddsFactory };
     } catch (error) {
       console.error("Failed to connect to Metamask:", error);
-      return { signerAddress: undefined, aggregator: undefined };
+      return { signerAddress: undefined, odinsOddsFactory: undefined };
     }
   }
-  return { signerAddress: undefined, aggregator: undefined };
+  return { signerAddress: undefined, odinsOddsFactory: undefined };
 };
 
 function showError(error) {

@@ -10,9 +10,13 @@ function OdinsOddsFactory({ blockchain }) {
 
   useEffect(() => {
     (async () => {
-      if (!blockchain.aggregator) {
+      if (!blockchain.odinsOddsFactory) {
         return;
       }
+      console.log('odinsOddsFactory', blockchain.odinsOddsFactory)
+      const wager = await blockchain.odinsOddsFactory.getWager(0); 
+      console.log(wager,'wager')
+      // setBalance(balance.toString());
 
     })();
   },[blockchain]);
@@ -29,7 +33,7 @@ function OdinsOddsFactory({ blockchain }) {
           spacing={2}
         >
           <form noValidate autoComplete='off' /*onSubmit={}*/>
-          <Grid item>
+          <Grid item xs={12}>
             <TextField 
               // onChange={(e) => setDepositAmount(e.target.value)}
               sx={{ m: 1, width: '42ch' }}
@@ -38,6 +42,8 @@ function OdinsOddsFactory({ blockchain }) {
               variant="outlined"
               required
             />
+            </Grid>
+            <Grid item xs={12}>
             <TextField 
               // onChange={(e) => setDepositAmount(e.target.value)}
               sx={{ m: 1, width: '42ch' }}
@@ -46,6 +52,8 @@ function OdinsOddsFactory({ blockchain }) {
               variant="outlined"
               required
             />
+            </Grid>
+            <Grid item xs={12}>
             <TextField 
               // onChange={(e) => setDepositAmount(e.target.value)}
               sx={{ m: 1, width: '42ch' }}
@@ -54,6 +62,9 @@ function OdinsOddsFactory({ blockchain }) {
               variant="outlined"
               required
             />
+            </Grid>
+            <Grid item xs={12}>
+
             <TextField 
               // onChange={(e) => setDepositAmount(e.target.value)}
               sx={{ m: 1, width: '42ch' }}
@@ -63,8 +74,6 @@ function OdinsOddsFactory({ blockchain }) {
               required
             />
             </Grid>
-   
-
           <Grid 
             container
             justifyContent="center"
