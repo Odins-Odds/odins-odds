@@ -8,14 +8,18 @@ const hre = require("hardhat");
 
 async function main() {
 
+  // sets up game mock
+  const Game = await hre.ethers.getContractFactory("Game");
+  const game = await Game.deploy();
+  await game.deployed();
+  console.log("Game address:", game.address);
+  await game.createGame();
+
+  // deploys factory
   const OdinsOddsFactory = await hre.ethers.getContractFactory("OdinsOddsFactory");
   const odinsOddsFactory = await OdinsOddsFactory.deploy();
-
   await odinsOddsFactory.deployed();
-  console.log("Contract address:", odinsOddsFactory.address);
-  const provider = hre.ethers.getDefaultProvider();
-  const blockNumber = await provider.getBlockNumber();
-  console.log('current block number: ',blockNumber);
+  console.log("OdinsOddsFactory address:", odinsOddsFactory.address);
 
   saveFrontendFiles(odinsOddsFactory);
 }
