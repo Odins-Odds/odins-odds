@@ -1,8 +1,10 @@
 import './App.css';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { getBlockchain } from './utils/common'
 import NavBar from "./components/navbar.js";
 import OdinsOddsFactory from './components/OdinsOddsFactory.js';
+import OdinsPrediction from './components/OdinsPrediction.js';
 
 function App() {
 
@@ -15,10 +17,15 @@ function App() {
   },[]);
 
   return (
+    <Router>
     <div >
-    <NavBar />
-    <OdinsOddsFactory blockchain={blockchain} />
+      <NavBar />
+      <Routes>
+        <Route path="/" element={ <OdinsOddsFactory blockchain={blockchain} /> } />
+        <Route path="/prediction/:id" element={ <OdinsPrediction /> } />
+      </Routes>
     </div>
+  </Router>
   );
 }
 

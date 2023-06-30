@@ -1,6 +1,7 @@
 import { AppBar, Toolbar, Button, Typography, Box, Link } from '@mui/material'
 import { ethers } from "ethers";
 import React, { useState } from "react";
+import { Link as RouterLink } from 'react-router-dom';
 
 const NavBar = () => {
 
@@ -51,6 +52,14 @@ const NavBar = () => {
             sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block', cursor: 'pointer' } }}>
           Odins Odds
         </Typography>
+        <Box sx={{ flexGrow: 1 }}>
+          <Link component={RouterLink} to="/" underline="none" sx={{ color: 'white', mr: 2 }}>
+            Home
+          </Link>
+          <Link component={RouterLink} to="/prediction/123" underline="none" sx={{ color: 'white' }}>
+            Prediction 123
+          </Link>
+        </Box>
         <Typography       
           sx={{ pl:2}}
           variant="h6" 
