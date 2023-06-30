@@ -6,7 +6,7 @@ import wager from '../ABIs/Wager.json';
 import { useParams } from 'react-router-dom';
 
 
-const OdinsPrediction = () => {
+const OdinsPrediction = ({ blockchain }) => {
   const { id } = useParams();
 
     return (

@@ -22,7 +22,7 @@ function App() {
       <NavBar />
       <Routes>
         <Route path="/" element={ <OdinsOddsFactory blockchain={blockchain} /> } />
-        <Route path="/prediction/:id" element={ <OdinsPrediction /> } />
+        <Route path="/prediction/:id" element={ <OdinsPrediction blockchain={blockchain} /> } />
       </Routes>
     </div>
   </Router>

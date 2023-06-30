@@ -1,13 +1,16 @@
-import { AppBar, Toolbar, Button, Typography, Box, Link } from '@mui/material'
+import { AppBar, Toolbar, Button, Typography, Box, Link, TextField } from '@mui/material'
 import { ethers } from "ethers";
 import React, { useState } from "react";
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 
 const NavBar = () => {
 
   const [errorMessage, setErrorMessage] = useState(null);
   const [account, setAccount] = useState(null);
   const [balance, setBalance] = useState(null);
+  const [predictionId, setPredictionId] = useState("");
+
+  const navigate = useNavigate();
 
 
   const accountsChanged = async (newAccount) => {
@@ -40,26 +43,77 @@ const NavBar = () => {
       setErrorMessage("Install MetaMask");
     }
   };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    // Use the navigate function to navigate to the page for the entered prediction ID
+    navigate(`/prediction/${predictionId}`);
+  };
   
   return (
   <Box sx={{ flexGrow: 1 }}>
     <AppBar position="static">
       <Toolbar>
         <Typography variant="h6"
-            href="#"
+            component={RouterLink}
+            to="/"
             noWrap
-            component="div"
-            sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block', cursor: 'pointer' } }}>
+            sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block'}, cursor: 'pointer', color: 'inherit', textDecoration: 'none' }}>
           Odins Odds
         </Typography>
-        <Box sx={{ flexGrow: 1 }}>
-          <Link component={RouterLink} to="/" underline="none" sx={{ color: 'white', mr: 2 }}>
-            Home
-          </Link>
-          <Link component={RouterLink} to="/prediction/123" underline="none" sx={{ color: 'white' }}>
-            Prediction 123
-          </Link>
-        </Box>
+        <Box sx={{ 
+              flexGrow: 1, 
+              display: 'flex',
+              alignItems: 'center', // Align items vertically in the center
+          }}>
+              {/* <Link 
+                  component={RouterLink} 
+                  to="/" 
+                  underline="none" 
+                  sx={{ color: 'white', mr: 2 }}
+              >
+                  Home
+              </Link> */}
+              <form 
+                  onSubmit={handleSubmit} 
+                  sx={{ 
+                      display: 'flex',
+                      alignItems: 'center', // Align items vertically in the center
+                      color: 'white'
+                  }}
+              >
+                  <TextField
+                      value={predictionId}
+                      onChange={e => setPredictionId(e.target.value)}
+                      placeholder="Enter prediction ID"
+                      variant="standard" // Use the standard variant to have smaller input field
+                      sx={{
+                          mr: 2, // Add margin to the right
+                          '& .MuiInputBase-root': { // Target the input field itself
+                              color: 'white', // Make the input text white
+                              backgroundColor: 'rgba(255, 255, 255, 0.15)', // Semi-transparent white background
+                              borderRadius: 1, // Small rounded corners
+                          },
+                          '& .MuiInput-underline:before': { // Hide the underline
+                              display: 'none',
+                          },
+                          '& .MuiInput-underline:after': { // Hide the underline
+                              display: 'none',
+                          },
+                      }}
+                  />
+                  <Button 
+                      type="submit" 
+                      variant="contained"
+                      sx={{ 
+                          color: 'black', // Black text
+                          backgroundColor: 'white', // White background
+                      }}
+                  >
+                      Go to Prediction
+                  </Button>
+              </form>
+          </Box>
         <Typography       
           sx={{ pl:2}}
           variant="h6" 
