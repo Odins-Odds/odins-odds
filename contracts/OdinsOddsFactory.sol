@@ -10,17 +10,25 @@ contract OdinsOddsFactory {
 
     mapping(uint256 => Wager) public wagersMap;
 
+    event WagerCreated(
+        uint256 indexed wagerId,
+        address indexed owner,
+        address gameContract,
+        uint256 gameId,
+        uint256 expiry,
+        uint256 betChoices
+    );
+
     constructor() {
         odinsOwner = msg.sender;
     }
 
-    // creator decieds when people can stop betting
     function createWager(
         address _gameContract,
         uint256 _gameID,
         uint256 _expiry,
         uint256 _betChoices
-    ) public returns (uint256) {
+    ) public {
         Wager newWager = new Wager(
             _gameContract,
             _gameID,
@@ -29,10 +37,18 @@ contract OdinsOddsFactory {
             _betChoices,
             payable(msg.sender)
         );
+
         wagersMap[nextWagerId] = newWager;
         nextWagerId++;
 
-        return nextWagerId - 1;
+        emit WagerCreated(
+            nextWagerId,
+            msg.sender,
+            _gameContract,
+            _gameID,
+            _expiry,
+            _betChoices
+        );
     }
 
     function getWager(uint256 _wagerID) public view returns (Wager) {

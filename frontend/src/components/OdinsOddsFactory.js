@@ -12,6 +12,7 @@ function OdinsOddsFactory({ blockchain }) {
   const [gameID, setGameID] = useState();
   const [expiryTime, setExpiryTime] = useState();
   const [predictionChoices, setPredictionChoices] = useState();
+  const [newPredictionId, setNewPredictionId] = useState(null)
 
 
   useEffect(() => {
@@ -38,8 +39,14 @@ function OdinsOddsFactory({ blockchain }) {
     e.preventDefault();
     if (window.ethereum) {
       try {
-        const newPradiction = await blockchain.odinsOddsFactory.createWager(gameContractAddress, gameID, expiryTime, predictionChoices); 
-        console.log(newPradiction);
+        const transaction = await blockchain.odinsOddsFactory.createWager(gameContractAddress, gameID, expiryTime, predictionChoices); 
+        const receipt = await transaction.wait();
+
+        // Get the wager ID from the logs
+        // This assumes that your contract is emitting an event with the wager ID as the first argument
+        const wagerId = receipt.events?.find((el) => el.event === 'WagerCreated')?.args?.wagerId;
+        
+        setNewPredictionId(wagerId);
       } 
       catch (error) {
         showError(error);
@@ -139,6 +146,10 @@ function OdinsOddsFactory({ blockchain }) {
               </Button>
             </Grid>
           </form>
+
+        {newPredictionId && (
+          <Typography variant="h6">New prediction created with ID: {newPredictionId.toString()}</Typography>
+        )}
 
         </Grid>
       </Box>
