@@ -10,7 +10,8 @@ const OdinsPrediction = ({ blockchain }) => {
   const { id } = useParams();
   const [wagerContract, setWagerContract] = useState({});
   const [hasEnded, setHasEnded] = useState(false);
-  const [Stage, setStage] = useState(false);
+  const [stage, setStage] = useState(false);
+  const [prediction, setPrediction] = useState(false);
 
 
   useEffect(() => {
@@ -33,9 +34,6 @@ const OdinsPrediction = ({ blockchain }) => {
         const stage = await wagerContract.getWagerStage();
         setStage(stage);
 
-
-
-        console.log(hasEnded);
       } catch (error) {
         console.error(error);
       }
@@ -44,14 +42,39 @@ const OdinsPrediction = ({ blockchain }) => {
     fetchWagerData();
   }, [blockchain, id]);
 
+  const makePrediction = async (e) => {
+    e.preventDefault();
+    if (window.ethereum) {
+      try {
+        await wagerContract.placeBet(prediction); 
+      } 
+      catch (error) {
+        showError(error);
+      }
+    }
+  };
+
   const checkGameResult = async () => {
     try {
       if (!wagerContract) {
         throw new Error('Wager contract is not loaded');
       }
-      // TODO use GAME ID!!! use the new contract function to do that you have to update the ABI first
-      const ID = await wagerContract.checkGameResult(id); 
-      console.log(ID);
+      let ID = await wagerContract.getGameID();
+      let result = await wagerContract.checkGameResult(ID); 
+      console.log(result);
+    } 
+    catch (error) {
+      showError(error);
+    }
+  };
+
+  const withdraw = async () => {
+    try {
+      if (!wagerContract) {
+        throw new Error('Wager contract is not loaded');
+      }
+      let tx = await wagerContract.withdrawWinnings();
+      console.log(tx);
     } 
     catch (error) {
       showError(error);
@@ -71,10 +94,10 @@ const OdinsPrediction = ({ blockchain }) => {
           >
             <h1>Prediction Page for {id}</h1>
 
-            <form noValidate autoComplete='off' /*onSubmit={getPrediction}*/>
+            <form noValidate autoComplete='off' onSubmit={makePrediction}>
               <Grid item xs={12}>
                 <TextField 
-                  // onChange={(e) => setPredictionID(e.target.value)}
+                  onChange={(e) => setPrediction(e.target.value)}
                   sx={{ m: 1, width: '42ch' }}
                   id="outlined-basic" 
                   label="Prediction" 
@@ -94,54 +117,28 @@ const OdinsPrediction = ({ blockchain }) => {
               </Grid>
             </form>
 
-            <form noValidate autoComplete='off' /*onSubmit={getPrediction}*/>
-              <Grid item xs={12}>
-                <TextField 
-                  // onChange={(e) => setPredictionID(e.target.value)}
-                  sx={{ m: 1, width: '42ch' }}
-                  id="outlined-basic" 
-                  label="Prediction" 
-                  variant="outlined"
-                  required
-                />
-                </Grid>
-              <Grid 
-                container
-                justifyContent="center"
-              >
-                <Button 
-                  type='submit'
-                  variant='contained'>
-                  Make Prediction
-                </Button>
-              </Grid>
-            </form>
+            <Grid item xs={12}>
+              <Button 
+                variant='contained'
+                onClick={checkGameResult} >
+                Check game result 
+              </Button>
+            </Grid>
 
-
-
-            <Button 
-              variant='contained'
-              onClick={checkGameResult} >
-              Check game result 
-            </Button>
-            {/* make function to take in game ID in the function should only be a button */}
-            {/* <Button 
-              variant='contained'
-              onClick={gettPredictionID} >
-              Check Game Result
-            </Button>
-            <Button 
-              variant='contained'
-              onClick={gettPredictionID} >
-              Withdraw Winnings
-            </Button> */}
+            <Grid item xs={12}>
+              <Button 
+                variant='contained'
+                onClick={withdraw} >
+                Withdraw Winnings
+              </Button>
+            </Grid>
 
             <Box sx={{ padding: 5 }}>
               <Typography >
                 Has Prediction Ended: {hasEnded}
               </Typography>
               <Typography>
-                Stage: {Stage}
+                Stage: {stage}
               </Typography>
             </Box>
 
