@@ -220,6 +220,10 @@ contract Wager {
         return ID;
     }
 
+    function getGameID() public view returns (uint256) {
+        return gameID;
+    }
+
     function getBet(
         Stage _stage,
         uint256 _index
